@@ -5,6 +5,7 @@
  */
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.*;
 
 
@@ -25,26 +26,34 @@ public class A1Prob {
 			int bl = str.indexOf(' ');
 			int set_size = Integer.parseInt(str.substring(0, bl));
 			int count_set = 0;
-			ArrayList<Integer> list = new ArrayList<Integer>();
+			// Use an array to hold all numbers of a set
+			int[] arr = new int[set_size];
 			int sum = Integer.parseInt(str.substring(bl+1));
+			
+			// Populate all set elements in the array
 			while (count_set < set_size){
 				str = br.readLine();
 				int item = Integer.parseInt(str);
-				list.add(item);
+				arr[count_set] = item;
 				count_set++;
 			}
-			// A number either belongs to the subset or not, if it does then lets remove it from the list and reduce the sum
-//			int number = list.remove(0);
-			System.out.println("Set of "+ set_size +" item = ("+ list.toString() +")");
-			System.out.println(subset(list, 0, sum)?sum+"=Yes":sum+"=No");
-			// Print set of N = N items by comma
-			System.out.println("Set of "+ set_size +" item = ("+ list.toString() +")");
+			
+			// Check if `arr` has subset where elements add up to `sum`
+			// This first of the recursive call here gives the "outermost return", else are all "inner returns"
+			System.out.println(subset_arr(arr, set_size, sum)?"Yes":"No");
+			
 			count++;
 		}
-//		System.out.println("Total cases = "+ t);
-
 	}
 	
+	/** 
+	 * REDUNDANT - Using arraylists was not a good idea :-( (they are also passed by reference and we do not want to exclude items)
+	 * 
+	 * @param list
+	 * @param num
+	 * @param sum
+	 * @return
+	 */
 	public static boolean subset(ArrayList<Integer> list, int num, int sum) {
 		// We have touched the right numbers removing them from the sum to reach 0. So our subset is found.
 		if (sum == 0) {
@@ -70,6 +79,26 @@ public class A1Prob {
 			System.out.println("Number considered = "+num);
 			System.out.println("current set = ("+ list.toString() +")");
 			return subset(list, newnum, sum-newnum) || subset(list, newnum, sum); 
+		}
+	}
+	
+	public static boolean subset_arr(int[] arr, int n, int sum) {
+		// Do the "outermost return of the recursive function first.
+		// We have touched the right numbers removing them from the sum to reach 0. So our subset is found.
+		if (sum == 0) {
+			return true;
+		}
+		// If we hit empty pool, and the sum is still not 0, we touched numbers in a subset that do not add up.
+		if (n==0 && sum!=0) {
+			return false;
+		}
+		// If neither is the case, we do not consider the current number if it is greater than sum, and keep sum unchanged.
+		// But otherwise it could still belong OR not.. so we change the sum or not.
+		if (arr[n-1] > sum) {
+			return subset_arr(arr, n-1, sum);
+		}
+		else {
+			return subset_arr(arr, n-1, sum-arr[n-1]) || subset_arr(arr, n-1, sum);
 		}
 	}
 
